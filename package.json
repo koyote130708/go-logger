@@ -1,0 +1,42 @@
+{
+    "name": "go-logger",
+    "description": "A logger with message filtering, handling, and formatting.",
+    "author": "Michael Ko",
+    "email": "koyote130708@gmail.com",
+    "version": "1.0.0",
+    "license": "GNU LGPLv3",
+    "keywords": [
+        "logger",
+        "logging",
+        "log messages"
+    ],
+    "homepage": "https://github.com/koyote130708/go-logger",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/koyote130708/go-logger.git"
+    },
+    "main": "index.js",
+    "scripts": {
+        "start": "node src\/.tmp\/test.js",
+        "build": "npm run bundle & npm run minify",
+        "bundle": "webpack build --mode=none --progress --entry ./index.js -o ./dist --output-filename go-logger.js --output-library-name=Logger --output-library-type=umd --output-global-object=this",
+        "minify": "uglifyjs ./dist/go-logger.js -c -m --source-map -o ./dist/go-logger.min.js",
+        "test": "mocha -u tdd test/*Test.js",
+        "coverage": "c8 --clean npm run test",
+        "docs": "documentation readme index.js --section=Documentation",
+        "docs:html": "documentation build index.js -f html -o docs"
+    },
+    "dependencies": {
+        "go-constant": "1.1.0"
+    },
+    "devDependencies": {
+        "c8": "^7.12.0",
+        "chai": "^4.3.6",
+        "documentation": "^14.0.0",
+        "mocha": "^10.0.0",
+        "uglify-js": "^3.17.3",
+        "webpack": "^5.74.0",
+        "webpack-cli": "^4.10.0"
+    },
+    "engine": "node >= 0.10"
+}
