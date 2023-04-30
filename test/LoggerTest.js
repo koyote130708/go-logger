@@ -31,7 +31,7 @@ function newHandler() {
 
     var handler = function (level, msg) {
         assert(level instanceof Level);
-        
+
         var params = Array.prototype.slice.call(arguments, 1);
 
         logs.all.push(params);
@@ -65,7 +65,7 @@ suite("Logger", function () {
 
     var formatter = function (level, msg) {
         assert(level instanceof Level);
-        
+
         var params = Array.prototype.slice.call(arguments, 1);
 
         var results = params.map(function (value) {
@@ -1647,17 +1647,64 @@ suite("Logger", function () {
 
 
     suite("#default logger", function () {
-        test("default logger", function () {
-            Logger.DEFAULT.log(Level.ALL);
-            Logger.DEFAULT.log(Level.TRACE);
-            Logger.DEFAULT.log(Level.DEBUG);
-            Logger.DEFAULT.log(Level.INFO);
-            Logger.DEFAULT.log(Level.WARN);
-            Logger.DEFAULT.log(Level.ERROR);
-            Logger.DEFAULT.log(Level.FATAL);
-
-            Logger.DEFAULT.log(3);
+        test("is a Logger instance", function () {
+            assert(Logger.getDefault() instanceof Logger);
         });
+
+
+        test("is a singleton", function () {
+            assert(Logger.getDefault() === Logger.getDefault());
+        });
+
+
+        test("static methods", function () {
+            logger = Logger.getDefault();
+            assert.equal(Logger.setName("foo"), logger);
+            assert.equal(Logger.getName(), logger.getName());
+
+            assert.equal(Logger.setLevel(Level.INFO), logger);
+            assert.equal(Logger.getLevel(), logger.getLevel());
+
+            assert.equal(Logger.addFilter(filter1), logger);
+            assert.equal(Logger.addFilter(filter2), logger);
+            assert.deepEqual(Logger.getAllFilters(), logger.getAllFilters());
+
+            assert.equal(Logger.removeFilter(filter2), logger);
+            assert.deepEqual(Logger.getAllFilters(), logger.getAllFilters());
+
+            assert.equal(Logger.clearFilters(), logger);
+            assert.deepEqual(Logger.getAllFilters(), logger.getAllFilters());
+
+            assert.deepEqual(Logger.getAllHandlers(), logger.getAllHandlers());
+
+            assert.equal(Logger.addHandler(newHandler()), logger);
+            assert.deepEqual(Logger.getAllHandlers(), logger.getAllHandlers());
+
+            assert.equal(Logger.removeHandler(Logger.getAllHandlers()[0]), logger);
+            assert.deepEqual(Logger.getAllHandlers(), logger.getAllHandlers());
+
+            assert.equal(Logger.clearHandlers(), logger);
+            assert.deepEqual(Logger.getAllHandlers(), logger.getAllHandlers());
+
+            assert.equal(Logger.setFormatter(formatter), logger);
+            assert.equal(Logger.getFormatter(), logger.getFormatter());
+
+            Logger.setLevel(Level.ALL);
+
+            assert.equal(Logger.log(Level.ALL, 1), true);
+            assert.equal(Logger.log(Level.ALL.name, 2), true);
+            assert.equal(Logger.log(Level.ALL.value, 3), true);
+            assert.equal(Logger.log(Level.ALL.value + 1, 4), true);
+
+            assert.equal(Logger.trace("2", 2), true);
+            assert.equal(Logger.debug("3", 3), true);
+            assert.equal(Logger.info("4", 4), true);
+            assert.equal(Logger.warn("5", 5), true);
+            assert.equal(Logger.error("6", 6), true);
+            assert.equal(Logger.fatal("7", 7), true);
+
+        });
+
     });
 
 });

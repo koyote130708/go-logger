@@ -1,26 +1,27 @@
 {
-    "name": "go-logger",
-    "description": "A logger with message filtering, handling, and formatting.",
+    "name": "go-logs",
+    "description": "A configurable logger with message filtering, formatting and handling.",
     "author": "Michael Ko",
     "email": "koyote130708@gmail.com",
     "version": "1.0.0",
     "license": "GNU LGPLv3",
     "keywords": [
+        "log",
         "logger",
         "logging",
-        "log messages"
+        "log levels"
     ],
-    "homepage": "https://github.com/koyote130708/go-logger",
+    "homepage": "https://github.com/koyote130708/go-logs",
     "repository": {
         "type": "git",
-        "url": "https://github.com/koyote130708/go-logger.git"
+        "url": "https://github.com/koyote130708/go-logs.git"
     },
     "main": "index.js",
     "scripts": {
         "start": "node src\/.tmp\/test.js",
         "build": "npm run bundle & npm run minify",
-        "bundle": "webpack build --mode=none --progress --entry ./index.js -o ./dist --output-filename go-logger.js --output-library-name=Logger --output-library-type=umd --output-global-object=this",
-        "minify": "uglifyjs ./dist/go-logger.js -c -m --source-map -o ./dist/go-logger.min.js",
+        "bundle": "webpack build --mode=none --progress --entry ./index.js -o ./dist --output-filename go-logs.js --output-library-name=Logs --output-library-type=umd --output-global-object=this",
+        "minify": "uglifyjs ./dist/go-logs.js -c -m --source-map -o ./dist/go-logs.min.js",
         "test": "mocha -u tdd test/*Test.js",
         "coverage": "c8 --clean npm run test",
         "docs": "documentation readme index.js --section=Documentation",

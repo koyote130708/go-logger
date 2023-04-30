@@ -14,13 +14,13 @@ function expectFunction(val) {
 }
 
 var CONSOLE_LOG_FUNCTIONS = {
-    ALL: console.log,
-    TRACE: console.trace,
-    DEBUG: console.debug,
-    INFO: console.info,
-    WARN: console.warn,
-    ERROR: console.error,
-    FATAL: console.error
+    all: console.log,
+    trace: console.trace,
+    debug: console.debug,
+    info: console.info,
+    warn: console.warn,
+    error: console.error,
+    fatal: console.error
 };
 
 /**
@@ -48,12 +48,13 @@ var CONSOLE_LOG_FUNCTIONS = {
  * - FATAL: 600 ("fatal")
  * @param {(Object|Logger)} [arg] constructor options or an instance of logger to copy.
  * @param {string} [arg.name] The name of the Logger.
- * @param {(number|string)} [arg.level] The minimum severity level to log.
+ * @param {(Level|number|string)} [arg.level] The minimum severity level to log.
  * @param {Function[]} [arg.filters] Message filters.
  * @param {Function[]} [arg.handlers] Message handlers.
  * @param {Function} [arg.formatter] Message formatter.
  * @author Michael Ko (koyote130708@gmail.com)
  * @version 1.0.0
+ * @namespace Logger
  */
 function Logger(arg) {
     if (this instanceof Logger) {
@@ -174,10 +175,8 @@ Object.assign(Logger.prototype, {
      *      return typeof msg === "string";
      * });
      * 
-     * // add a filter that accepts if the second message parameter is defined.
-     * logger.addFilter((level, msg, msg2) => {
-     *      return typeof msg2 != null;
-     * });
+     * logger.info("hi"); // => logged
+     * logger.info(1);    // => not logged
      * @since 1.0.0
      */
     addFilter: function (filter) {
@@ -264,10 +263,12 @@ Object.assign(Logger.prototype, {
      * @param {messageCallback} formatter The formatter function to use to format messages.
      * @returns {Logger} This Logger instance.
      * @example 
-     * // put a timestamp in the message.
+     * // prefix the level name.
      * logger.setFormatter((level, msg) => {
-     *      return new Date().toISOString() + ":" + msg;
+     *      return level.name + ":" + msg;
      * });
+     * 
+     * logger.info("hello"); // => logs "info:hello"
      * @since 1.0.0
      */
     setFormatter: function (formatter) {
@@ -280,7 +281,7 @@ Object.assign(Logger.prototype, {
      * Additionally, if a formatter is set, the message will be formatted before being passed to the handlers.
      * @param {(number|string|Level)} level The message level.
      * @param {...*} msg The message parameters.
-     * @returns {Logger} <code>true</code> if the message is logged, <code>false</code> otherwise.
+     * @returns {boolean} <code>true</code> if the message is logged, <code>false</code> otherwise.
      * @since 1.0.0
      */
     log: function (level, msg) {
@@ -323,7 +324,7 @@ Object.assign(Logger.prototype, {
      * Additionally, if a formatter is set, the message will be formatted before being passed to the handlers.
      * This is same as calling <code>log(Level.TRACE, msg)</code>
      * @param {...*} msg The message parameters.
-     * @returns {Logger} This Logger instance.
+     * @returns {boolean} <code>true</code> if the message is logged, <code>false</code> otherwise.
      * @example
      * trace("data");
      * @since 1.0.0
@@ -337,7 +338,7 @@ Object.assign(Logger.prototype, {
      * Additionally, if a formatter is set, the message will be formatted before being passed to the handlers.
      * This is same as calling <code>log(Level.DEBUG, msg)</code>
      * @param {...*} msg The message parameters.
-     * @returns {Logger} This Logger instance.
+     * @returns {boolean} <code>true</code> if the message is logged, <code>false</code> otherwise.
      * @since 1.0.0
      */
     debug: function (msg) {
@@ -349,7 +350,7 @@ Object.assign(Logger.prototype, {
      * Additionally, if a formatter is set, the message will be formatted before being passed to the handlers.
      * This is same as calling <code>log(Level.INFO, msg)</code>
      * @param {...*} msg The message parameters.
-     * @returns {Logger} This Logger instance.
+     * @returns {boolean} <code>true</code> if the message is logged, <code>false</code> otherwise.
      * @since 1.0.0
      */
     info: function (msg) {
@@ -361,7 +362,7 @@ Object.assign(Logger.prototype, {
      * Additionally, if a formatter is set, the message will be formatted before being passed to the handlers.
      * This is same as calling <code>log(Level.WARN, msg)</code>
      * @param {...*} msg The message parameters.
-     * @returns {Logger} This Logger instance.
+     * @returns {boolean} <code>true</code> if the message is logged, <code>false</code> otherwise.
      * @since 1.0.0
      */
     warn: function (msg) {
@@ -373,7 +374,7 @@ Object.assign(Logger.prototype, {
      * Additionally, if a formatter is set, the message will be formatted before being passed to the handlers.
      * This is same as calling <code>log(Level.ERROR, msg)</code>
      * @param {...*} msg The message parameters.
-     * @returns {Logger} This Logger instance.
+     * @returns {boolean} <code>true</code> if the message is logged, <code>false</code> otherwise.
      * @since 1.0.0
      */
     error: function (msg) {
@@ -385,7 +386,7 @@ Object.assign(Logger.prototype, {
      * Additionally, if a formatter is set, the message will be formatted before being passed to the handlers.
      * This is same as calling <code>log(Level.FATAL, msg)</code>
      * @param {...*} msg The message parameters.
-     * @returns {Logger} This Logger instance.
+     * @returns {boolean} <code>true</code> if the message is logged, <code>false</code> otherwise.
      * @since 1.0.0
      */
     fatal: function (msg) {
@@ -393,27 +394,246 @@ Object.assign(Logger.prototype, {
     }
 });
 
+var DEFAULT;
 
-var DEFAULT_LOGGER = new Logger({name: "default"});
+Object.assign(Logger, {
+    /**
+     * The default Logger instance.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    getDefault: function () {
+        if (DEFAULT == null) {
+            DEFAULT = new Logger({name: "default"});
+        }
 
-DEFAULT_LOGGER.addHandler(function (level) {
-    var levelName = level.name != null ? level.name.toUpperCase() : null;
-    var logFn = CONSOLE_LOG_FUNCTIONS[levelName] || CONSOLE_LOG_FUNCTIONS.ALL;
+        DEFAULT.addHandler(function (level) {
+            var levelName = level.name != null ? level.name : null;
+            var logFn = CONSOLE_LOG_FUNCTIONS[levelName] || CONSOLE_LOG_FUNCTIONS.all;
 
-    if (logFn) {
-        var args = Array.prototype.slice.call(arguments, 1);
-        args.unshift(level);
-        logFn.apply(this, args);
+            if (logFn) {
+                var args = Array.prototype.slice.call(arguments, 1);
+                args.unshift(level);
+                logFn.apply(this, args);
+            }
+        });
+
+        return DEFAULT;
+    },
+    Level: Level,
+    /**
+     * Calls the <code>getName</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    getName: function () {
+        return Logger.prototype.getName.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>setName</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    setName: function () {
+        return Logger.prototype.setName.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>getLevel</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    getLevel: function () {
+        return Logger.prototype.getLevel.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>setLevel</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    setLevel: function () {
+        return Logger.prototype.setLevel.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>getAllFilters</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    getAllFilters: function () {
+        return Logger.prototype.getAllFilters.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>addFilter</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    addFilter: function () {
+        return Logger.prototype.addFilter.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>removeFilter</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    removeFilter: function () {
+        return Logger.prototype.removeFilter.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>clearFilters</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    clearFilters: function () {
+        return Logger.prototype.clearFilters.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>getAllHandlers</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    getAllHandlers: function () {
+        return Logger.prototype.getAllHandlers.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>addHandler</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    addHandler: function () {
+        return Logger.prototype.addHandler.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>removeHandler</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    removeHandler: function () {
+        return Logger.prototype.removeHandler.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>clearHandlers</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    clearHandlers: function () {
+        return Logger.prototype.clearHandlers.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>getFormatter</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    getFormatter: function () {
+        return Logger.prototype.getFormatter.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>setFormatter</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    setFormatter: function () {
+        return Logger.prototype.setFormatter.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>log</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    log: function () {
+        return Logger.prototype.log.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>trace</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    trace: function () {
+        return Logger.prototype.trace.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>debug</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    debug: function () {
+        return Logger.prototype.debug.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>info</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    info: function () {
+        return Logger.prototype.info.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>warn</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    warn: function () {
+        return Logger.prototype.warn.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>error</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    error: function () {
+        return Logger.prototype.error.apply(this.getDefault(), arguments);
+    },
+    /**
+     * Calls the <code>fatal</code> method on the default <code>Logger</code> instance 
+     * with the provided arguments and returns the result.
+     * @since 1.0.0
+     * @memberof Logger
+     * @static
+     */
+    fatal: function () {
+        return Logger.prototype.fatal.apply(this.getDefault(), arguments);
     }
 });
 
-/**
- * The default Logger instance.
- * @since 1.0.0
- * @static
- */
-Logger.DEFAULT = DEFAULT_LOGGER;
-Logger.Level = Level;
 
 /**
  * @callback messageCallback

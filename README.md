@@ -1,9 +1,9 @@
-# Go Logger
+# Go Logs
 
-**A logger with message filtering, handling, and formatting.**
+**A configurable logger with message filtering, formatting and handling.**
 
 ![codecov.io Code Coverage](https://img.shields.io/badge/coverage-100%25-green.svg)
-[![jsdoc](https://img.shields.io/badge/docs-100%25-green.svg)](https://github.com/koyote130708/go-logger#documentation)
+[![jsdoc](https://img.shields.io/badge/docs-100%25-green.svg)](https://github.com/koyote130708/go-logs#documentation)
 [![donation](https://img.shields.io/badge/donate-blue.svg)](https://www.paypal.com/donate/?business=T7Q29NNMZVW98\&no_recurring=0\&item_name=Your+support+will+help+us++continue+our+work+and+improve+the+quality+of+our+products.+Thank+you!\&currency_code=USD)
 
 *   **version**: 1.0.0
@@ -14,21 +14,21 @@
 ## Installation
 
 ```javascript
-npm i go-logger
+npm i go-logs
 ```
 
 or
 
 ```javascript
-yarn add go-logger
+yarn add go-logs
 ```
 
 <br />
 
-#### To use in a browser, load the file located in the dist folder using a script tag.
+To load using a script tag in a browser, specify the build file in the dist folder. The module is assigned to a global variable "Logs".
 
 ```javascript
-<script src="dist/go-logger.min.js"></script>
+<script src="dist/go-logs.min.js"></script>
 ```
 
 <br />
@@ -37,18 +37,48 @@ yarn add go-logger
 
 ### ES6
 
+#### Default Logger
+
 ```javascript
-import Logger from 'go-logger'
+import { Logger, Level } from 'go-logs'
+
+Logger.getDefault().setLevel(Level.INFO);
+
+Logger.debug("hi");    // => not logged.
+Logger.info("hello");  // => prints "hello" to the console.
+```
+
+Or
+
+```javascript
+import { info, debug } from 'go-logs'
+
+debug("hi");    // => prints "hi" to the console.
+info("hello");  // => prints "hello" to the console.
+```
+
+#### Custom Logger
+
+```javascript
+import { Logger, Level } from 'go-logs'
 
 const logger = new Logger();
 
+// only allow string messages
+logger.addFilter((level, msg) => {
+	return typeof msg === "string";
+})
+
+// print the message to the console.
 logger.addHandler((level, msg) => {
 	console.log(msg);
 });
 
-logger.setLevel(Logger.Level.INFO);
+logger.setLevel(Level.INFO);
 
-logger.info("hello"); // => prints "hello" to the console.
+logger.debug("hi");     // => not logged.
+logger.info(1)          // => not logged.
+logger.info("hello");   // => prints "hello" to the console.
 
 ```
 
@@ -62,46 +92,67 @@ logger.info("hello"); // => prints "hello" to the console.
 
 *   [Logger](#logger)
     *   [Parameters](#parameters)
-    *   [DEFAULT](#default)
-*   [getName](#getname)
-*   [setName](#setname)
+    *   [getDefault](#getdefault)
+    *   [getName](#getname)
+    *   [setName](#setname)
+    *   [getLevel](#getlevel)
+    *   [setLevel](#setlevel)
+    *   [getAllFilters](#getallfilters)
+    *   [addFilter](#addfilter)
+    *   [removeFilter](#removefilter)
+    *   [clearFilters](#clearfilters)
+    *   [getAllHandlers](#getallhandlers)
+    *   [addHandler](#addhandler)
+    *   [removeHandler](#removehandler)
+    *   [clearHandlers](#clearhandlers)
+    *   [getFormatter](#getformatter)
+    *   [setFormatter](#setformatter)
+    *   [log](#log)
+    *   [trace](#trace)
+    *   [debug](#debug)
+    *   [info](#info)
+    *   [warn](#warn)
+    *   [error](#error)
+    *   [fatal](#fatal)
+*   [getName](#getname-1)
+*   [setName](#setname-1)
     *   [Parameters](#parameters-1)
-*   [getLevel](#getlevel)
-*   [setLevel](#setlevel)
+*   [getLevel](#getlevel-1)
+*   [setLevel](#setlevel-1)
     *   [Parameters](#parameters-2)
     *   [Examples](#examples)
-*   [getAllFilters](#getallfilters)
-*   [addFilter](#addfilter)
+*   [getAllFilters](#getallfilters-1)
+*   [addFilter](#addfilter-1)
     *   [Parameters](#parameters-3)
     *   [Examples](#examples-1)
-*   [removeFilter](#removefilter)
+*   [removeFilter](#removefilter-1)
     *   [Parameters](#parameters-4)
-*   [clearFilters](#clearfilters)
-*   [getAllHandlers](#getallhandlers)
-*   [addHandler](#addhandler)
+*   [clearFilters](#clearfilters-1)
+*   [getAllHandlers](#getallhandlers-1)
+*   [addHandler](#addhandler-1)
     *   [Parameters](#parameters-5)
     *   [Examples](#examples-2)
-*   [removeHandler](#removehandler)
+*   [removeHandler](#removehandler-1)
     *   [Parameters](#parameters-6)
-*   [clearHandlers](#clearhandlers)
-*   [getFormatter](#getformatter)
-*   [setFormatter](#setformatter)
+*   [clearHandlers](#clearhandlers-1)
+*   [getFormatter](#getformatter-1)
+*   [setFormatter](#setformatter-1)
     *   [Parameters](#parameters-7)
     *   [Examples](#examples-3)
-*   [log](#log)
+*   [log](#log-1)
     *   [Parameters](#parameters-8)
-*   [trace](#trace)
+*   [trace](#trace-1)
     *   [Parameters](#parameters-9)
     *   [Examples](#examples-4)
-*   [debug](#debug)
+*   [debug](#debug-1)
     *   [Parameters](#parameters-10)
-*   [info](#info)
+*   [info](#info-1)
     *   [Parameters](#parameters-11)
-*   [warn](#warn)
+*   [warn](#warn-1)
     *   [Parameters](#parameters-12)
-*   [error](#error)
+*   [error](#error-1)
     *   [Parameters](#parameters-13)
-*   [fatal](#fatal)
+*   [fatal](#fatal-1)
     *   [Parameters](#parameters-14)
 *   [messageCallback](#messagecallback)
     *   [Parameters](#parameters-15)
@@ -145,7 +196,7 @@ Log levels
 *   `arg` **([Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) | [Logger](#logger))?** constructor options or an instance of logger to copy.
 
     *   `arg.name` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** The name of the Logger.
-    *   `arg.level` **([number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number) | [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))?** The minimum severity level to log.
+    *   `arg.level` **(Level | [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number) | [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))?** The minimum severity level to log.
     *   `arg.filters` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[Function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)>?** Message filters.
     *   `arg.handlers` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[Function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)>?** Message handlers.
     *   `arg.formatter` **[Function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)?** Message formatter.
@@ -155,9 +206,198 @@ Log levels
 *   **version**: 1.0.0
 *   **author**: Michael Ko (koyote130708@gmail.com)
 
-#### DEFAULT
+#### getDefault
 
 The default Logger instance.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### getName
+
+Calls the <code>getName</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### setName
+
+Calls the <code>setName</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### getLevel
+
+Calls the <code>getLevel</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### setLevel
+
+Calls the <code>setLevel</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### getAllFilters
+
+Calls the <code>getAllFilters</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### addFilter
+
+Calls the <code>addFilter</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### removeFilter
+
+Calls the <code>removeFilter</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### clearFilters
+
+Calls the <code>clearFilters</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### getAllHandlers
+
+Calls the <code>getAllHandlers</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### addHandler
+
+Calls the <code>addHandler</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### removeHandler
+
+Calls the <code>removeHandler</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### clearHandlers
+
+Calls the <code>clearHandlers</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### getFormatter
+
+Calls the <code>getFormatter</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### setFormatter
+
+Calls the <code>setFormatter</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### log
+
+Calls the <code>log</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### trace
+
+Calls the <code>trace</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### debug
+
+Calls the <code>debug</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### info
+
+Calls the <code>info</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### warn
+
+Calls the <code>warn</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### error
+
+Calls the <code>error</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
+
+**Meta**
+
+*   **since**: 1.0.0
+
+#### fatal
+
+Calls the <code>fatal</code> method on the default <code>Logger</code> instance
+with the provided arguments and returns the result.
 
 **Meta**
 
@@ -254,10 +494,8 @@ logger.addFilter((level, msg) => {
      return typeof msg === "string";
 });
 
-// add a filter that accepts if the second message parameter is defined.
-logger.addFilter((level, msg, msg2) => {
-     return typeof msg2 != null;
-});
+logger.info("hi"); // => logged
+logger.info(1);    // => not logged
 ```
 
 Returns **[Logger](#logger)** This Logger instance.
@@ -368,10 +606,12 @@ Sets a message formatter to format accepted messages before forwarding to the ha
 #### Examples
 
 ```javascript
-// put a timestamp in the message.
+// prefix the level name.
 logger.setFormatter((level, msg) => {
-     return new Date().toISOString() + ":" + msg;
+     return level.name + ":" + msg;
 });
+
+logger.info("hello"); // => logs "info:hello"
 ```
 
 Returns **[Logger](#logger)** This Logger instance.
@@ -391,7 +631,7 @@ Additionally, if a formatter is set, the message will be formatted before being 
 *   `level` **([number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number) | [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | Level)** The message level.
 *   `msg` **...any** The message parameters.
 
-Returns **[Logger](#logger)** <code>true</code> if the message is logged, <code>false</code> otherwise.
+Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** <code>true</code> if the message is logged, <code>false</code> otherwise.
 
 **Meta**
 
@@ -414,7 +654,7 @@ This is same as calling <code>log(Level.TRACE, msg)</code>
 trace("data");
 ```
 
-Returns **[Logger](#logger)** This Logger instance.
+Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** <code>true</code> if the message is logged, <code>false</code> otherwise.
 
 **Meta**
 
@@ -431,7 +671,7 @@ This is same as calling <code>log(Level.DEBUG, msg)</code>
 
 *   `msg` **...any** The message parameters.
 
-Returns **[Logger](#logger)** This Logger instance.
+Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** <code>true</code> if the message is logged, <code>false</code> otherwise.
 
 **Meta**
 
@@ -448,7 +688,7 @@ This is same as calling <code>log(Level.INFO, msg)</code>
 
 *   `msg` **...any** The message parameters.
 
-Returns **[Logger](#logger)** This Logger instance.
+Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** <code>true</code> if the message is logged, <code>false</code> otherwise.
 
 **Meta**
 
@@ -465,7 +705,7 @@ This is same as calling <code>log(Level.WARN, msg)</code>
 
 *   `msg` **...any** The message parameters.
 
-Returns **[Logger](#logger)** This Logger instance.
+Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** <code>true</code> if the message is logged, <code>false</code> otherwise.
 
 **Meta**
 
@@ -482,7 +722,7 @@ This is same as calling <code>log(Level.ERROR, msg)</code>
 
 *   `msg` **...any** The message parameters.
 
-Returns **[Logger](#logger)** This Logger instance.
+Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** <code>true</code> if the message is logged, <code>false</code> otherwise.
 
 **Meta**
 
@@ -499,7 +739,7 @@ This is same as calling <code>log(Level.FATAL, msg)</code>
 
 *   `msg` **...any** The message parameters.
 
-Returns **[Logger](#logger)** This Logger instance.
+Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** <code>true</code> if the message is logged, <code>false</code> otherwise.
 
 **Meta**
 
