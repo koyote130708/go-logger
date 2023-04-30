@@ -406,18 +406,17 @@ Object.assign(Logger, {
     getDefault: function () {
         if (DEFAULT == null) {
             DEFAULT = new Logger({name: "default"});
+
+            DEFAULT.addHandler(function (level) {
+                var levelName = level.name != null ? level.name : null;
+                var logFn = CONSOLE_LOG_FUNCTIONS[levelName] || CONSOLE_LOG_FUNCTIONS.all;
+
+                if (logFn) {
+                    logFn.apply(this, Array.prototype.slice.call(arguments, 1));
+                }
+            });
+
         }
-
-        DEFAULT.addHandler(function (level) {
-            var levelName = level.name != null ? level.name : null;
-            var logFn = CONSOLE_LOG_FUNCTIONS[levelName] || CONSOLE_LOG_FUNCTIONS.all;
-
-            if (logFn) {
-                var args = Array.prototype.slice.call(arguments, 1);
-                args.unshift(level);
-                logFn.apply(this, args);
-            }
-        });
 
         return DEFAULT;
     },

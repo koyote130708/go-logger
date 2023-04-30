@@ -3,7 +3,7 @@
     "description": "A configurable logger with message filtering, formatting and handling.",
     "author": "Michael Ko",
     "email": "koyote130708@gmail.com",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "license": "GNU LGPLv3",
     "keywords": [
         "log",

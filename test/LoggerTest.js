@@ -1659,6 +1659,21 @@ suite("Logger", function () {
 
         test("static methods", function () {
             logger = Logger.getDefault();
+
+            Logger.setLevel(Level.ALL);
+
+            assert.equal(Logger.log(Level.ALL, 1), true);
+            assert.equal(Logger.log(Level.ALL.name, 2), true);
+            assert.equal(Logger.log(Level.ALL.value, 3), true);
+            assert.equal(Logger.log(Level.ALL.value + 1, 4), true);
+
+            assert.equal(Logger.trace("2", 2), true);
+            assert.equal(Logger.debug("3", 3), true);
+            assert.equal(Logger.info("4", 4), true);
+            assert.equal(Logger.warn("5", 5), true);
+            assert.equal(Logger.error("6", 6), true);
+            assert.equal(Logger.fatal("7", 7), true);
+
             assert.equal(Logger.setName("foo"), logger);
             assert.equal(Logger.getName(), logger.getName());
 
@@ -1688,21 +1703,6 @@ suite("Logger", function () {
 
             assert.equal(Logger.setFormatter(formatter), logger);
             assert.equal(Logger.getFormatter(), logger.getFormatter());
-
-            Logger.setLevel(Level.ALL);
-
-            assert.equal(Logger.log(Level.ALL, 1), true);
-            assert.equal(Logger.log(Level.ALL.name, 2), true);
-            assert.equal(Logger.log(Level.ALL.value, 3), true);
-            assert.equal(Logger.log(Level.ALL.value + 1, 4), true);
-
-            assert.equal(Logger.trace("2", 2), true);
-            assert.equal(Logger.debug("3", 3), true);
-            assert.equal(Logger.info("4", 4), true);
-            assert.equal(Logger.warn("5", 5), true);
-            assert.equal(Logger.error("6", 6), true);
-            assert.equal(Logger.fatal("7", 7), true);
-
         });
 
     });

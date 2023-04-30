@@ -6,7 +6,7 @@
 [![jsdoc](https://img.shields.io/badge/docs-100%25-green.svg)](https://github.com/koyote130708/go-logs#documentation)
 [![donation](https://img.shields.io/badge/donate-blue.svg)](https://www.paypal.com/donate/?business=T7Q29NNMZVW98\&no_recurring=0\&item_name=Your+support+will+help+us++continue+our+work+and+improve+the+quality+of+our+products.+Thank+you!\&currency_code=USD)
 
-*   **version**: 1.0.0
+*   **version**: 1.0.1
 *   **license**: GNU LGPLv3
 
 <br />
